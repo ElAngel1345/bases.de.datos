@@ -1,0 +1,250 @@
+---
+import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+import "../../styles/home.css";
+import "../../styles/post-detail.css";
+import "../../styles/page-transitions.css";
+import Navigation from "../../components/Navigation.astro";
+import Footer from "../../components/Footer.astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("posts");
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: CollectionEntry<"posts">;
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{post.data.title} - WordPress Gatsby Blog</title>
+    <script>
+      // Disable browser scroll restoration and ensure page starts at top
+      if ("scrollRestoration" in history) {
+        history.scrollRestoration = "manual";
+      }
+      // Immediately scroll to top on page load
+      window.scrollTo(0, 0);
+    </script>
+  </head>
+  <body>
+    <Navigation />
+
+    <main class="post-detail-page">
+      <div class="post-detail-container page-content">
+        <div class="post-header-card post-header-animate">
+          <h1 class="post-detail-title">{post.data.title}</h1>
+          {
+            post.data.tags && post.data.tags.length > 0 && (
+              <div class="post-detail-tags">
+                {post.data.tags.map((tag) => (
+                  <span class="post-detail-tag">{tag}</span>
+                ))}
+              </div>
+            )
+          }
+          <div class="post-detail-meta">
+            <img
+              src="/image/20943608.jpeg"
+              alt={post.data.author || "Someone"}
+              class="post-detail-avatar"
+            />
+            <div class="post-detail-meta-info">
+              <span class="post-detail-author"
+                >{post.data.author || "Someone"}</span
+              >
+              <span class="post-detail-date">{post.data.date}</span>
+              <span class="post-detail-read-time">{post.data.readTime}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="post-content post-content-animate">
+          <Content />
+        </div>
+      </div>
+    </main>
+
+    <Footer />
+
+    <script>
+      // Ensure scroll position is at top after DOM loads
+      document.addEventListener("DOMContentLoaded", () => {
+        window.scrollTo(0, 0);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+        }, 0);
+      });
+      // Also ensure on page show (handles back/forward navigation)
+      window.addEventListener("pageshow", (event) => {
+        if (event.persisted) {
+          window.scrollTo(0, 0);
+        }
+      });
+
+      // Initialize page transition animations
+      document.addEventListener("DOMContentLoaded", () => {
+        // Trigger page content animation
+        const pageContent = document.querySelector(".page-content");
+        if (pageContent) {
+          requestAnimationFrame(() => {
+            pageContent.classList.add("visible");
+          });
+        }
+
+        // Trigger header animation
+        const header = document.querySelector(".post-header-animate");
+        if (header) {
+          requestAnimationFrame(() => {
+            header.classList.add("visible");
+          });
+        }
+
+        // Trigger content animation
+        const content = document.querySelector(".post-content-animate");
+        if (content) {
+          requestAnimationFrame(() => {
+            content.classList.add("visible");
+          });
+        }
+
+        // Force apply margin-bottom to headings using JavaScript - spacing reduced by 50%
+        const applyHeadingSpacing = () => {
+          const postContent = document.querySelector(".post-content");
+          if (!postContent) return;
+
+          const h2s = postContent.querySelectorAll("h2");
+          h2s.forEach((h2) => {
+            if (h2 instanceof HTMLElement) {
+              // Skip first h2 (no margin-top needed)
+              if (h2.previousElementSibling === null) {
+                h2.style.marginTop = "0";
+              } else {
+                h2.style.marginTop = "3rem";
+              }
+              h2.style.marginBottom = "1.17rem"; // Reduced by 1/3 from 1.75rem
+            }
+          });
+
+          const h3s = postContent.querySelectorAll("h3");
+          h3s.forEach((h3) => {
+            if (h3 instanceof HTMLElement) {
+              h3.style.marginTop = "2.5rem";
+              h3.style.marginBottom = "1rem"; // Reduced by 1/3 from 1.5rem
+            }
+          });
+
+          const h4s = postContent.querySelectorAll("h4");
+          h4s.forEach((h4) => {
+            if (h4 instanceof HTMLElement) {
+              h4.style.marginTop = "2rem";
+              h4.style.marginBottom = "0.83rem"; // Reduced by 1/3 from 1.25rem
+            }
+          });
+
+          // Also set margin-top for paragraphs after headings - reduced by 50%
+          h2s.forEach((h2) => {
+            const nextP = h2.nextElementSibling;
+            if (
+              nextP &&
+              nextP instanceof HTMLElement &&
+              (nextP.tagName === "P" ||
+                nextP.tagName === "UL" ||
+                nextP.tagName === "OL")
+            ) {
+              nextP.style.marginTop = "1.17rem"; // Reduced by 1/3 from 1.75rem
+            }
+          });
+
+          h3s.forEach((h3) => {
+            const nextP = h3.nextElementSibling;
+            if (
+              nextP &&
+              nextP instanceof HTMLElement &&
+              (nextP.tagName === "P" ||
+                nextP.tagName === "UL" ||
+                nextP.tagName === "OL")
+            ) {
+              nextP.style.marginTop = "1rem"; // Reduced by 1/3 from 1.5rem
+            }
+          });
+
+          h4s.forEach((h4) => {
+            const nextP = h4.nextElementSibling;
+            if (
+              nextP &&
+              nextP instanceof HTMLElement &&
+              (nextP.tagName === "P" ||
+                nextP.tagName === "UL" ||
+                nextP.tagName === "OL" ||
+                nextP.tagName === "PRE")
+            ) {
+              nextP.style.marginTop = "0.83rem"; // Reduced by 1/3 from 1.25rem
+            }
+          });
+        };
+
+        // Override code block inline styles - use function to run multiple times
+        const overrideCodeStyles = () => {
+          const codeBlocks = document.querySelectorAll(
+            ".post-content pre, .post-content pre.astro-code"
+          );
+          codeBlocks.forEach((pre) => {
+            if (pre instanceof HTMLElement) {
+              // Remove inline styles first, then set new ones
+              pre.style.removeProperty("background-color");
+              pre.style.removeProperty("color");
+              pre.style.backgroundColor = "#f5f5f5";
+              pre.style.borderRadius = "8px";
+              pre.style.color = "#333";
+
+              // Override code element styles
+              const code = pre.querySelector("code");
+              if (code instanceof HTMLElement) {
+                code.style.removeProperty("background-color");
+                code.style.removeProperty("color");
+                code.style.backgroundColor = "transparent";
+                code.style.color = "#333";
+
+                // Override all span styles inside code
+                const spans = code.querySelectorAll("span");
+                spans.forEach((span) => {
+                  if (span instanceof HTMLElement) {
+                    span.style.removeProperty("color");
+                    span.style.color = "#333";
+                  }
+                });
+              }
+            }
+          });
+        };
+
+        // Run immediately
+        applyHeadingSpacing();
+        overrideCodeStyles();
+
+        // Also run after delays to catch any late-rendered elements
+        setTimeout(() => {
+          applyHeadingSpacing();
+          overrideCodeStyles();
+        }, 100);
+        setTimeout(() => {
+          applyHeadingSpacing();
+          overrideCodeStyles();
+        }, 500);
+      });
+    </script>
+  </body>
+</html>
